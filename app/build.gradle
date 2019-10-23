@@ -39,6 +39,9 @@ dependencies {
     // Retrofit xml converter
     implementation "com.squareup.retrofit2:converter-simplexml:$retrofitVersion"
 
+    // Retrofit gson converter
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+
     // ViewModel and LiveData
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
 

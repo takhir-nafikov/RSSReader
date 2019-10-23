@@ -1,29 +1,69 @@
 package com.takhir.rssreader;
 
+import android.arch.lifecycle.Observer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class CustomFragment extends Fragment {
+import com.takhir.rssreader.adapters.RSSRecyclerAdapter;
+import com.takhir.rssreader.models.Channel;
+import com.takhir.rssreader.models.Item;
+import com.takhir.rssreader.models.RSS;
+import com.takhir.rssreader.requests.RSSApiClient;
+
+import java.util.List;
+
+public class CustomFragment extends Fragment implements RSSRecyclerAdapter.OnRecyclerListener {
+
+    private static final String TAG = "CustomFragment";
+
+    private RecyclerView recyclerView;
+    private RSSRecyclerAdapter rssRecyclerAdapter;
+    private String title;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View rootView = inflater.inflate(R.layout.child_fragment_1_layout, container, false);
-        Button buttonInFragment1 = rootView.findViewById(R.id.button_1);
-        buttonInFragment1.setOnClickListener(new View.OnClickListener() {
+        View rootView = inflater.inflate(R.layout.fragment_custom, container, false);
+
+        recyclerView = rootView.findViewById(R.id.rss_list);
+        RSSApiClient.getInstance().searchRSSFeeds("https://lenta.ru/rss/news/");
+
+        initRecyclerView();
+        subscribeObserves();
+        return rootView;
+    }
+
+    private void initRecyclerView() {
+        rssRecyclerAdapter = new RSSRecyclerAdapter(this);
+        recyclerView.setAdapter(rssRecyclerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+    }
+
+    private void subscribeObserves() {
+        RSSApiClient.getInstance().getRss().observe(this, new Observer<RSS>() {
             @Override
-            public void onClick(View view) {
-                Toast.makeText(getContext(), "button in fragment 1", Toast.LENGTH_SHORT).show();
+            public void onChanged(@Nullable RSS rss) {
+
+                Channel channel = rss.getChannel();
+                List<Item> items = channel.getItems();
+                rssRecyclerAdapter.setItems(items);
+                
             }
         });
+    }
 
-        return rootView;
+    @Override
+    public void onClickItem(int position) {
+        Toast.makeText(getContext(), "pos: " + position, Toast.LENGTH_SHORT).show();
     }
 }

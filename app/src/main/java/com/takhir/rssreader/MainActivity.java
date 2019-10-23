@@ -1,6 +1,8 @@
 package com.takhir.rssreader;
 
+import android.arch.lifecycle.Observer;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,8 +13,11 @@ import android.view.MenuItem;
 import com.takhir.rssreader.adapters.ViewPagerAdapter;
 import com.takhir.rssreader.models.Channel;
 import com.takhir.rssreader.models.Item;
-import com.takhir.rssreader.models.Rss;
+import com.takhir.rssreader.models.RSS;
 import com.takhir.rssreader.requests.RSSApi;
+import com.takhir.rssreader.requests.RSSApiClient;
+import com.takhir.rssreader.requests.RSSResponse;
+import com.takhir.rssreader.requests.ServiceGenerator;
 
 import java.util.List;
 
@@ -39,22 +44,43 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(adapter);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        call();
+        //call();
+        //testapicl();
+    }
+
+    private void testapicl() {
+        RSSApiClient.getInstance().searchRSSFeeds("https://lenta.ru/rss/news/");
+        RSSApiClient.getInstance().getRss().observe(this, new Observer<RSS>() {
+            @Override
+            public void onChanged(@Nullable RSS rss) {
+
+                Channel channel = rss.getChannel();
+                List<Item> items = channel.getItems();
+
+                Log.d(TAG, "onResponse: desc: " + items.get(0).getDescription());
+                Log.d(TAG, "onResponse: updated: " + items.get(0).getPubDate());
+                Log.d(TAG, "onResponse: title: " + items.get(0).getTitle());
+                Log.d(TAG, "onResponse: title: " + items.get(0).getLink());
+                Log.d(TAG, "onResponse: img1: " + items.get(0).getEnclosure_url().getUrl());
+                Log.d(TAG, "onResponse: title: " + channel.getTitle());
+                Log.d(TAG, "onResponse: title: " + channel.getLink());
+                Log.d(TAG, "onResponse: img2: " + channel.getImage().getUrl());
+
+            }
+        });
     }
 
     private void call() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://habr.com/ru/rss/interesting/")
-                .addConverterFactory(SimpleXmlConverterFactory.create())
-                .build();
+        ServiceGenerator serviceGenerator = ServiceGenerator.newBuilder()
+                                            .setUrl("https://habr.com/ru/rss/interesting/")
+                                            .buildRetrofit()
+                                            .setRSSApi().build();
 
-        RSSApi rssApi = retrofit.create(RSSApi.class);
+        Call<RSS> call = serviceGenerator.getRssApi().getRSSFeed();
 
-        Call<Rss> call = rssApi.getRSSFeed();
-
-        call.enqueue(new Callback<Rss>() {
+        call.enqueue(new Callback<RSS>() {
             @Override
-            public void onResponse(Call<Rss> call, Response<Rss> response) {
+            public void onResponse(Call<RSS> call, Response<RSS> response) {
                 Log.d(TAG, "onResponse: Server Response: " + response.toString());
 
                 Channel channel = response.body().getChannel();
@@ -72,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<Rss> call, Throwable t) {
+            public void onFailure(Call<RSS> call, Throwable t) {
                 Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage() );
             }
         });

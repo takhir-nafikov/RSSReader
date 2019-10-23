@@ -6,7 +6,7 @@ import org.simpleframework.xml.Root;
 import java.io.Serializable;
 
 @Root(name = "rss", strict = false)
-public class Rss implements Serializable {
+public class RSS implements Serializable {
 
     @Element(name = "channel")
     private Channel channel;

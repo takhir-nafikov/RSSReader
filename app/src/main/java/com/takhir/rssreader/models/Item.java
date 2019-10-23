@@ -23,8 +23,8 @@ public class Item implements Serializable {
     @Element(name = "description")
     private String description;
 
-    @Element(required = false,name = "enclosure url")
-    private String enclosure_url;
+    @Element(required = false,name = "enclosure")
+    private Enclosure enclosure_url;
 
     @Element(name = "pubDate")
     private String pubDate;
@@ -38,7 +38,7 @@ public class Item implements Serializable {
 
     public Item(){}
 
-    public Item(String title, String guid, String link, String description, String enclosure_url, String pubDate, String category, String creator) {
+    public Item(String title, String guid, String link, String description, Enclosure enclosure_url, String pubDate, String category, String creator) {
         this.title = title;
         this.guid = guid;
         this.link = link;
@@ -73,11 +73,11 @@ public class Item implements Serializable {
         this.description = description;
     }
 
-    public String getEnclosure_url() {
+    public Enclosure getEnclosure_url() {
         return enclosure_url;
     }
 
-    public void setEnclosure_url(String enclosure_url) {
+    public void setEnclosure_url(Enclosure enclosure_url) {
         this.enclosure_url = enclosure_url;
     }
 
