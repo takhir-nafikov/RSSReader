@@ -23,10 +23,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     }
 
     public void addFragment(CustomFragment fragment) {
-        //childFragments.add(fragment);
-        //notifyDataSetChanged();
-        //Log.d(TAG, "Added");
-        //Log.d(TAG, "Size: " + childFragments.size());
+        childFragments.add(fragment);
+        notifyDataSetChanged();
     }
 
     @Override

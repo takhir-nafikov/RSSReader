@@ -1,6 +1,7 @@
 package com.takhir.rssreader;
 
 import android.arch.lifecycle.Observer;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -53,17 +54,18 @@ public class CustomFragment extends Fragment implements RSSRecyclerAdapter.OnRec
         RSSApiClient.getInstance().getRss().observe(this, new Observer<RSS>() {
             @Override
             public void onChanged(@Nullable RSS rss) {
-
                 Channel channel = rss.getChannel();
                 List<Item> items = channel.getItems();
                 rssRecyclerAdapter.setItems(items);
-                
             }
         });
     }
 
     @Override
     public void onClickItem(int position) {
-        Toast.makeText(getContext(), "pos: " + position, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), ItemActivity.class);
+        Item item = rssRecyclerAdapter.getSelectedItem(position);
+        intent.putExtra("item", item);
+        startActivity(intent);
     }
 }

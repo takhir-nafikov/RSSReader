@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.takhir.rssreader.R;
+import com.takhir.rssreader.models.Enclosure;
 import com.takhir.rssreader.models.Item;
 
 import java.util.ArrayList;
@@ -81,10 +82,18 @@ public class RSSRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         notifyDataSetChanged();
     }
 
+    public Item getSelectedItem(int pos) {
+        if (items != null && items.size() > 0) {
+            return items.get(pos);
+        }
+        return null;
+    }
+
     public void displayLoading(){
         if (!isLoading()) {
             Item item = new Item();
             item.setTitle("LOADING...");
+            item.setEnclosure_url(new Enclosure());
             List<Item> loadingList = new ArrayList<>();
             loadingList.add(item);
             items = loadingList;
