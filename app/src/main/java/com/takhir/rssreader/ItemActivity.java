@@ -8,7 +8,7 @@ import android.util.Log;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.takhir.rssreader.models.Item;
+import com.takhir.rssreader.models.xml.Item;
 
 public class ItemActivity extends AppCompatActivity {
 

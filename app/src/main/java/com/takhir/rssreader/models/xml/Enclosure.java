@@ -1,4 +1,4 @@
-package com.takhir.rssreader.models;
+package com.takhir.rssreader.models.xml;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;

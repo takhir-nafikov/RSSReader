@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.takhir.rssreader.R;
-import com.takhir.rssreader.models.Enclosure;
-import com.takhir.rssreader.models.Item;
+import com.takhir.rssreader.models.xml.Enclosure;
+import com.takhir.rssreader.models.xml.Item;
 
 import java.util.ArrayList;
 import java.util.List;
