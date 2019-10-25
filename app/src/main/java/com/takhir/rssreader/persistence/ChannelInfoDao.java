@@ -13,7 +13,7 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 public interface ChannelInfoDao {
 
     @Insert(onConflict = REPLACE)
-    void insertRecipe(ChannelInfo info);
+    void insertInfo(ChannelInfo info);
 
     @Query("SELECT * FROM channels WHERE uuid LIKE :uuid")
     LiveData<ChannelInfo> getChannelInfo(String uuid);

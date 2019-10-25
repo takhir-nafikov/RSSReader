@@ -21,8 +21,11 @@ public interface PostDao {
             "WHERE id = :id")
     void updatePost(int id, String uuid, String title, String description, String date, String image);
 
-    @Query("SELECT * FROM posts WHERE uuid LIKE :uuid LIMIT 30")
+    @Query("SELECT * FROM posts WHERE uuid LIKE :uuid")
     LiveData<List<Post>> searchPosts(String uuid);
+
+    @Query("DELETE FROM posts WHERE uuid LIKE :uuid")
+    void deletePostsByUUID(String uuid);
 
     @Query("DELETE FROM posts")
     void clearTable();

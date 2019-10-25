@@ -7,9 +7,10 @@ import android.arch.persistence.room.TypeConverters;
 import android.content.Context;
 
 import com.takhir.rssreader.models.database.ChannelInfo;
+import com.takhir.rssreader.models.database.Feed;
 import com.takhir.rssreader.models.database.Post;
 
-@Database(entities = {Post.class, ChannelInfo.class}, version = 1)
+@Database(entities = {Post.class, ChannelInfo.class, Feed.class}, version = 3)
 @TypeConverters({Converters.class})
 public abstract class RSSDatabase extends RoomDatabase{
 
@@ -31,4 +32,6 @@ public abstract class RSSDatabase extends RoomDatabase{
     public abstract PostDao getPostDao();
 
     public abstract ChannelInfoDao getChannelInfoDao();
+
+    public abstract FeedDao getFeedDao();
 }

@@ -1,22 +1,16 @@
 package com.takhir.rssreader.repositories;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.takhir.rssreader.AppExecutors;
+import com.takhir.rssreader.models.database.ChannelInfo;
 import com.takhir.rssreader.models.database.Post;
-import com.takhir.rssreader.models.xml.RSS;
 import com.takhir.rssreader.persistence.ChannelInfoDao;
 import com.takhir.rssreader.persistence.PostDao;
 import com.takhir.rssreader.persistence.RSSDatabase;
-import com.takhir.rssreader.requests.ServiceGenerator;
-import com.takhir.rssreader.requests.responses.ApiResponse;
-import com.takhir.rssreader.requests.responses.RSSResponse;
-import com.takhir.rssreader.utils.NetworkBoundResource;
-import com.takhir.rssreader.utils.Resource;
+import com.takhir.rssreader.requests.RSSApiClient;
 
 import java.util.List;
 
@@ -24,7 +18,10 @@ public class RSSRepository {
 
     private static final String TAG = "RSSRepository";
 
+    private MutableLiveData<Post> intentPost = new MutableLiveData<>();
+
     private static RSSRepository instance;
+    private static RSSApiClient rssApiClient;
     private PostDao postDao;
     private ChannelInfoDao channelInfoDao;
 
@@ -36,43 +33,53 @@ public class RSSRepository {
     }
 
     private RSSRepository(Context context) {
+        rssApiClient = RSSApiClient.getInstance();
         postDao = RSSDatabase.getInstance(context).getPostDao();
         channelInfoDao = RSSDatabase.getInstance(context).getChannelInfoDao();
     }
 
-    public LiveData<Resource<List<Post>>> searchPosts(final String url, final String uuid) {
-        return new NetworkBoundResource<List<Post>, RSS>(AppExecutors.getInstance()) {
+    public void searchRSSFeeds(String url) {
+        rssApiClient.searchRSSFeeds(url);
+    }
 
+    public LiveData<List<Post>> getPosts() {
+        return rssApiClient.getPosts();
+    }
+
+    public LiveData<ChannelInfo> getInfoChannel() {
+        return rssApiClient.getInfoChannel();
+    }
+
+    public void savePostsInDb(String uuid) {
+        List<Post> postList = rssApiClient.getPosts().getValue();
+        Post[] recipes = new Post[postList.size()];
+        postDao.deletePostsByUUID(uuid);
+        postDao.insertRecipes((Post[]) (postList.toArray(recipes)));
+    }
+
+    public LiveData<List<Post>> getPostsFromDbByUUID(String uuid) {
+        return postDao.searchPosts(uuid);
+    }
+
+    public void saveChannelInfoInDb(final ChannelInfo channelInfo) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
-            protected void saveCallResult(@NonNull RSS item) {
-                if (item.getChannel() != null) {
-                    Log.d(TAG, "ok: " + item.getChannel().getTitle());
-                } else {
-                    Log.e(TAG, "failed");
-                }
+            public void run() {
+                channelInfoDao.clearTable();
+                channelInfoDao.insertInfo(channelInfo);
             }
+        });
+    }
 
-            @Override
-            protected boolean shouldFetch(@Nullable List<Post> data) {
-                return true;
-            }
+    public LiveData<ChannelInfo> getChannelInfoFromDBByUUID(String uuid){
+        return channelInfoDao.getChannelInfo(uuid);
+    }
 
-            @NonNull
-            @Override
-            protected LiveData<List<Post>> loadFromDb() {
-                return postDao.searchPosts(uuid);
-            }
+    public LiveData<Post> getIntentPost() {
+        return intentPost;
+    }
 
-            @NonNull
-            @Override
-            protected LiveData<ApiResponse<RSS>> createCall() {
-                ServiceGenerator serviceGenerator = ServiceGenerator.newBuilder()
-                        .setUrl(url)
-                        .buildRetrofit()
-                        .setRSSApi().build();
-
-                return serviceGenerator.getRssApi().getRSSFeed();
-            }
-        }.getAsLiveData();
+    public void setIntentPost(Post post) {
+        intentPost.postValue(post);
     }
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.takhir.rssreader.R;
+import com.takhir.rssreader.models.database.Post;
 import com.takhir.rssreader.models.xml.Enclosure;
 import com.takhir.rssreader.models.xml.Item;
 
@@ -24,7 +25,7 @@ public class RSSRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private static final int ITEM_TYPE = 1;
     private static final int LOADING_TYPE = 2;
 
-    private List<Item> items;
+    private List<Post> posts;
     private OnRecyclerListener listener;
 
     public RSSRecyclerAdapter(OnRecyclerListener listener) {
@@ -35,89 +36,42 @@ public class RSSRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View view = null;
-        if (viewType == LOADING_TYPE) {
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_loading_list_item, parent, false);
-            return new RSSViewHolder(view, listener);
-        } else {
-            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_rss_list_item, parent, false);
-            return new RSSViewHolder(view, listener);
-        }
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_rss_list_item, parent, false);
+        return new RSSViewHolder(view, listener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         RequestOptions requestOptions = new RequestOptions()
-                .placeholder(R.drawable.ic_launcher_background);
+                .placeholder(R.drawable.totoro);
 
         Glide.with(holder.itemView.getContext())
                 .setDefaultRequestOptions(requestOptions)
-                .load(items.get(position).getEnclosure_url().getUrl())
+                .load(posts.get(position).getImage())
                 .into(((RSSViewHolder)holder).image);
 
-        ((RSSViewHolder)holder).title.setText(items.get(position).getTitle());
-        ((RSSViewHolder)holder).desc.setText(items.get(position).getDescription());
-        ((RSSViewHolder)holder).pubDate.setText((items.get(position).getPubDate()));
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if(items.get(position).getTitle().equals("LOADING...")){
-            return LOADING_TYPE;
-        } else{
-            return ITEM_TYPE;
-        }
+        ((RSSViewHolder)holder).title.setText(posts.get(position).getTitle());
+        ((RSSViewHolder)holder).desc.setText(posts.get(position).getDescription());
+        ((RSSViewHolder)holder).pubDate.setText((posts.get(position).getDate()));
     }
 
     @Override
     public int getItemCount() {
-        if (items != null) {
-            return  items.size();
+        if (posts != null) {
+            return  posts.size();
         }
         return 0;
     }
 
-    public void setItems(List<Item> items) {
-        this.items = items;
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
         notifyDataSetChanged();
     }
 
-    public Item getSelectedItem(int pos) {
-        if (items != null && items.size() > 0) {
-            return items.get(pos);
+    public Post getSelectedItem(int pos) {
+        if (posts != null && posts.size() > 0) {
+            return posts.get(pos);
         }
         return null;
-    }
-
-    public void displayLoading(){
-        if (!isLoading()) {
-            Item item = new Item();
-            item.setTitle("LOADING...");
-            item.setEnclosure_url(new Enclosure());
-            List<Item> loadingList = new ArrayList<>();
-            loadingList.add(item);
-            items = loadingList;
-            notifyDataSetChanged();
-        }
-    }
-
-    private boolean isLoading() {
-        if (items != null && items.size() > 0) {
-            if (items.get(items.size() - 1).getTitle().equals("LOADING...")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void hideLoading(){
-        if(isLoading()){
-            for(Item item: items){
-                if(item.getTitle().equals("LOADING...")){
-                    items.remove(item);
-                }
-            }
-            notifyDataSetChanged();
-        }
     }
 }

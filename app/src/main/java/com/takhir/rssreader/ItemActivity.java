@@ -8,6 +8,10 @@ import android.util.Log;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.takhir.rssreader.adapters.RSSViewHolder;
+import com.takhir.rssreader.models.database.Post;
 import com.takhir.rssreader.models.xml.Item;
 
 public class ItemActivity extends AppCompatActivity {
@@ -16,7 +20,6 @@ public class ItemActivity extends AppCompatActivity {
 
     private AppCompatImageView rssImage;
     private TextView rssTitle, rssDesc, rssPubDate;
-    private ScrollView scrollView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,11 +34,19 @@ public class ItemActivity extends AppCompatActivity {
     }
 
     private void getIncomingIntent() {
-        if (getIntent().hasExtra("item")) {
-            Item item = (Item) getIntent().getSerializableExtra("item");
-            Log.d(TAG, "getIncomingIntent: " + item.getTitle());
-            Log.d(TAG, "getIncomingIntent: " + item.getPubDate());
-            Log.d(TAG, "getIncomingIntent: " + item.getDescription());
+        if (getIntent().hasExtra("post")) {
+            Post post =  getIntent().getParcelableExtra("post");
+            rssTitle.setText(post.getTitle());
+            rssDesc.setText(post.getDescription());
+            rssPubDate.setText(post.getDate());
+
+            RequestOptions requestOptions = new RequestOptions()
+                    .placeholder(R.drawable.totoro);
+
+            Glide.with(this)
+                    .setDefaultRequestOptions(requestOptions)
+                    .load(post.getImage())
+                    .into(rssImage);
         }
     }
 }

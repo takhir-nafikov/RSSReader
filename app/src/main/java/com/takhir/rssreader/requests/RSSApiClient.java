@@ -5,24 +5,28 @@ import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
 import com.takhir.rssreader.AppExecutors;
-import com.takhir.rssreader.models.RSS;
+import com.takhir.rssreader.models.database.ChannelInfo;
+import com.takhir.rssreader.models.database.Post;
+import com.takhir.rssreader.models.xml.Channel;
+import com.takhir.rssreader.models.xml.Item;
+import com.takhir.rssreader.models.xml.RSS;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 public class RSSApiClient {
 
     private static final String TAG = "RSSApiClient";
 
     private static RSSApiClient instance;
-    private MutableLiveData<RSS> Rss;
+    private MutableLiveData<ChannelInfo> infoChannel;
+    private MutableLiveData<List<Post>> posts;
     private RetrieveRSSRunnable retrieveRSSRunnable;
 
     public static RSSApiClient getInstance() {
@@ -33,11 +37,16 @@ public class RSSApiClient {
     }
 
     private RSSApiClient() {
-        Rss = new MutableLiveData<>();
+        infoChannel = new MutableLiveData<>();
+        posts = new MutableLiveData<>();
     }
 
-    public LiveData<RSS> getRss() {
-        return Rss;
+    public LiveData<ChannelInfo> getInfoChannel() {
+        return infoChannel;
+    }
+
+    public LiveData<List<Post>> getPosts() {
+        return posts;
     }
 
     public void searchRSSFeeds(String url) {
@@ -69,18 +78,43 @@ public class RSSApiClient {
                 getRSS(url).enqueue(new Callback<RSS>() {
                     @Override
                     public void onResponse(Call<RSS> call, Response<RSS> response) {
-                        Rss.postValue(response.body());
+
+                        Channel channel = response.body().getChannel();
+
+                        ChannelInfo channelInfo = new ChannelInfo();
+                        channelInfo.setUuid(url);
+                        channelInfo.setLink(channel.getLink());
+                        channelInfo.setTitle(channel.getTitle());
+                        infoChannel.postValue(channelInfo);
+
+                        List<Item> items = channel.getItems();
+                        List<Post> postList = new ArrayList<>();
+                        for(Item item : items) {
+                            Post post = new Post();
+                            post.setUuid(url);
+                            post.setDescription(item.getDescription());
+                            post.setDate(item.getPubDate());
+                            post.setTitle(item.getTitle());
+                            if (item.getEnclosure_url() != null) {
+                                post.setImage(item.getEnclosure_url().getUrl());
+                            }
+
+                            postList.add(post);
+                        }
+                        posts.postValue(postList);
                     }
 
                     @Override
                     public void onFailure(Call<RSS> call, Throwable t) {
                         Log.e(TAG, t.getLocalizedMessage());
-                        Rss.postValue(null);
+                        infoChannel.postValue(null);
+                        posts.postValue(null);
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-                Rss.postValue(null);
+                infoChannel.postValue(null);
+                posts.postValue(null);
             }
         }
 
